@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VIP Day Prospect Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9f8f5;color:#1a1a18;padding:2rem;max-width:860px;margin:0 auto}
+h2{font-size:20px;font-weight:500;color:#1a1a18;margin-bottom:4px}
+.sub{font-size:13px;color:#5f5e5a;margin-bottom:1.5rem}
+.tabs{display:flex;gap:8px;margin-bottom:1.5rem;border-bottom:0.5px solid rgba(0,0,0,0.12);padding-bottom:0}
+.tab{font-size:13px;padding:6px 14px;cursor:pointer;border-radius:8px 8px 0 0;color:#5f5e5a;border:none;background:transparent}
+.tab.active{color:#1a1a18;font-weight:500;background:#f1efe8;border:0.5px solid rgba(0,0,0,0.12);border-bottom:none}
+.panel{display:none}.panel.active{display:block}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-grid.three{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+label{font-size:12px;color:#5f5e5a}
+input,select,textarea{width:100%;font-size:13px;padding:7px 10px;border:0.5px solid rgba(0,0,0,0.2);border-radius:8px;background:#fff;color:#1a1a18;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:rgba(23,95,165,0.5);box-shadow:0 0 0 2px rgba(23,95,165,0.1)}
+textarea{resize:vertical;min-height:60px}
+.score-section{background:#f1efe8;border-radius:12px;padding:1rem;margin:12px 0}
+.score-section h3{font-size:12px;font-weight:500;color:#5f5e5a;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em}
+.score-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.score-label{font-size:12px;color:#5f5e5a;width:160px;flex-shrink:0}
+.score-dots{display:flex;gap:4px}
+.dot{width:26px;height:26px;border-radius:50%;border:0.5px solid rgba(0,0,0,0.15);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;color:#5f5e5a;background:#fff}
+.dot.sel{background:#e6f1fb;border-color:rgba(23,95,165,0.4);color:#185fa5;font-weight:500}
+.score-total{font-size:22px;font-weight:500;color:#1a1a18}
+.score-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;margin-left:8px}
+.badge-hot{background:#fcebeb;color:#a32d2d}
+.badge-warm{background:#faeeda;color:#854f0b}
+.badge-cold{background:#f1efe8;color:#5f5e5a}
+.btn-row{display:flex;gap:8px;margin-top:12px}
+button{font-size:13px;padding:7px 16px;border-radius:8px;cursor:pointer;border:0.5px solid rgba(0,0,0,0.15);background:#fff;color:#1a1a18;font-family:inherit}
+button:hover{background:#f1efe8}
+button.primary{background:#e6f1fb;border-color:rgba(23,95,165,0.3);color:#185fa5}
+button.primary:hover{background:#b5d4f4}
+.prospect-list{display:flex;flex-direction:column;gap:8px}
+.prospect-card{background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;padding:.875rem 1rem;display:grid;grid-template-columns:1fr auto;align-items:start;gap:12px}
+.prospect-card.top{border-left:2px solid #d85a30}
+.pname{font-size:14px;font-weight:500;color:#1a1a18}
+.pbiz{font-size:12px;color:#5f5e5a;margin-top:2px}
+.ptags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.ptag{font-size:11px;padding:2px 7px;border-radius:8px;background:#f1efe8;color:#5f5e5a}
+.pscore{font-size:22px;font-weight:500;color:#1a1a18;text-align:right}
+.pscore-label{font-size:11px;color:#5f5e5a;text-align:right}
+.friction-note{font-size:12px;color:#5f5e5a;margin-top:6px;font-style:italic;line-height:1.5}
+.empty{text-align:center;padding:3rem 1rem;color:#5f5e5a;font-size:14px;background:#fff;border-radius:12px;border:0.5px solid rgba(0,0,0,0.08)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:#fff;border-radius:8px;padding:.75rem;text-align:center;border:0.5px solid rgba(0,0,0,0.08)}
+.stat-val{font-size:22px;font-weight:500;color:#1a1a18}
+.stat-lbl{font-size:11px;color:#5f5e5a;margin-top:2px}
+.del-btn{font-size:11px;padding:3px 8px;border-radius:8px;color:#5f5e5a;background:transparent;border:0.5px solid rgba(0,0,0,0.12);cursor:pointer;margin-top:6px;font-family:inherit}
+.del-btn:hover{color:#a32d2d;border-color:rgba(163,45,45,0.3);background:#fcebeb}
+.section-label{font-size:12px;font-weight:500;color:#5f5e5a;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.why-note{font-size:12px;color:#5f5e5a;margin-top:4px;line-height:1.5}
+.score-breakdown{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.score-dim{font-size:10px;padding:2px 6px;border-radius:6px;background:#f1efe8;color:#5f5e5a}
+.contact-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.contact-chip{font-size:11px;padding:3px 8px;border-radius:6px;background:#f1efe8;color:#185fa5;text-decoration:none;border:0.5px solid rgba(23,95,165,0.15)}
+.contact-chip:hover{background:#e6f1fb}
+@media(max-width:600px){
+  .form-grid,.form-grid.three{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div style="padding:1.5rem 0">
+<h2>VIP Day prospect tracker</h2>
+<div class="sub">Build your 30-person list. Score each prospect. The top 10 surface automatically.</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('list')">All prospects</button>
+  <button class="tab" onclick="showTab('top10')">Top 10</button>
+  <button class="tab" onclick="showTab('add')">Add prospect</button>
+</div>
+
+<div id="panel-list" class="panel active">
+  <div class="stats" id="stats"></div>
+  <div class="prospect-list" id="prospect-list"></div>
+</div>
+
+<div id="panel-top10" class="panel">
+  <div class="prospect-list" id="top10-list"></div>
+</div>
+
+<div id="panel-add" class="panel">
+  <div class="section-label">Basic info</div>
+  <div class="form-grid">
+    <div class="form-group"><label>Name</label><input id="f-name" placeholder="First Last"/></div>
+    <div class="form-group"><label>Business name</label><input id="f-biz" placeholder="Company or brand"/></div>
+  </div>
+  <div class="form-grid three">
+    <div class="form-group"><label>Revenue estimate</label>
+      <select id="f-rev">
+        <option value="">Select</option>
+        <option>6-figure</option>
+        <option>7-figure</option>
+        <option>Unknown / est. 6-fig</option>
+        <option>Unknown / est. 7-fig</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Primary platform</label>
+      <select id="f-platform">
+        <option value="">Select</option>
+        <option>LinkedIn</option>
+        <option>Instagram</option>
+        <option>Threads</option>
+        <option>Podcast</option>
+        <option>Website / SEO</option>
+        <option>YouTube</option>
+        <option>Email list</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Best entry point</label>
+      <select id="f-entry">
+        <option value="">Select</option>
+        <option>DM</option>
+        <option>Email</option>
+        <option>LinkedIn message</option>
+        <option>Comment to DM</option>
+        <option>Warm intro</option>
+        <option>Event / room</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-grid">
+    <div class="form-group"><label>Current main offer</label><input id="f-offer" placeholder="What they sell"/></div>
+    <div class="form-group"><label>Offer type</label>
+      <select id="f-type">
+        <option value="">Select</option>
+        <option>Service / agency</option>
+        <option>Coaching / consulting</option>
+        <option>Course / education</option>
+        <option>Personal brand / media</option>
+        <option>SaaS / product</option>
+        <option>Hybrid</option>
+      </select>
+    </div>
+  </div>
+  <div class="section-label">Contact info</div>
+  <div class="form-grid">
+    <div class="form-group"><label>Email</label><input id="f-email" type="email" placeholder="name@domain.com"/></div>
+    <div class="form-group"><label>Phone</label><input id="f-phone" type="tel" placeholder="+1 (555) 000-0000"/></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-group"><label>Website</label><input id="f-website" type="url" placeholder="https://"/></div>
+    <div class="form-group"><label>Social media link</label><input id="f-social" type="url" placeholder="https://linkedin.com/in/... or threads, IG, etc."/></div>
+  </div>
+  <div class="form-group" style="margin-bottom:10px"><label>Visible friction you observe</label><textarea id="f-friction" placeholder="What public signals suggest drag, sprawl, or inconsistency?"></textarea></div>
+  <div class="form-group" style="margin-bottom:10px"><label>Why they match a VIP Day</label><textarea id="f-why" placeholder="Expensive friction, visible problem, close to action..."></textarea></div>
+
+  <div class="score-section">
+    <h3>Score each dimension (1 to 5)</h3>
+    <div id="score-dims"></div>
+    <div style="margin-top:12px;display:flex;align-items:baseline;gap:8px">
+      <span style="font-size:13px;color:#5f5e5a">Total:</span>
+      <span class="score-total" id="score-total">0</span>
+      <span style="font-size:13px;color:#5f5e5a">/ 30</span>
+      <span class="score-badge" id="score-badge">—</span>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="primary" onclick="addProspect()">Add to list</button>
+    <button onclick="clearForm()">Clear</button>
+  </div>
+</div>
+</div>
+
+<script>
+const DIMS=[
+  {key:'pay',label:'Ability to pay'},
+  {key:'visibility',label:'Problem visibility'},
+  {key:'urgency',label:'Urgency signals'},
+  {key:'brand',label:'Personal brand presence'},
+  {key:'complexity',label:'Offer complexity'},
+  {key:'access',label:'Ease of access'},
+];
+
+let prospects=JSON.parse(localStorage.getItem('vd_prospects')||'[]');
+let scores={};
+
+function save(){localStorage.setItem('vd_prospects',JSON.stringify(prospects));}
+
+function initScoreDims(){
+  const c=document.getElementById('score-dims');
+  c.innerHTML='';
+  DIMS.forEach(d=>{
+    scores[d.key]=0;
+    const row=document.createElement('div');
+    row.className='score-row';
+    const lbl=document.createElement('span');
+    lbl.className='score-label';
+    lbl.textContent=d.label;
+    const dots=document.createElement('div');
+    dots.className='score-dots';
+    for(let i=1;i<=5;i++){
+      const dot=document.createElement('div');
+      dot.className='dot';
+      dot.textContent=i;
+      dot.dataset.dim=d.key;
+      dot.dataset.val=i;
+      dot.onclick=()=>selectDot(d.key,i);
+      dots.appendChild(dot);
+    }
+    row.appendChild(lbl);
+    row.appendChild(dots);
+    c.appendChild(row);
+  });
+}
+
+function selectDot(dim,val){
+  scores[dim]=val;
+  document.querySelectorAll(`.dot[data-dim="${dim}"]`).forEach(d=>{
+    d.classList.toggle('sel',parseInt(d.dataset.val)<=val);
+  });
+  updateScoreDisplay();
+}
+
+function updateScoreDisplay(){
+  const total=Object.values(scores).reduce((a,b)=>a+b,0);
+  document.getElementById('score-total').textContent=total;
+  const badge=document.getElementById('score-badge');
+  if(total>=20){badge.textContent='Top priority';badge.className='score-badge badge-hot';}
+  else if(total>=14){badge.textContent='Warm';badge.className='score-badge badge-warm';}
+  else{badge.textContent='Low priority';badge.className='score-badge badge-cold';}
+}
+
+function addProspect(){
+  const name=document.getElementById('f-name').value.trim();
+  const biz=document.getElementById('f-biz').value.trim();
+  if(!name){alert('Name is required.');return;}
+  const total=Object.values(scores).reduce((a,b)=>a+b,0);
+  const p={
+    id:Date.now(),name,biz,
+    rev:document.getElementById('f-rev').value,
+    platform:document.getElementById('f-platform').value,
+    entry:document.getElementById('f-entry').value,
+    offer:document.getElementById('f-offer').value,
+    type:document.getElementById('f-type').value,
+    friction:document.getElementById('f-friction').value,
+    why:document.getElementById('f-why').value,
+    email:document.getElementById('f-email').value.trim(),
+    phone:document.getElementById('f-phone').value.trim(),
+    website:document.getElementById('f-website').value.trim(),
+    social:document.getElementById('f-social').value.trim(),
+    scores:{...scores},total,
+  };
+  prospects.push(p);
+  prospects.sort((a,b)=>b.total-a.total);
+  save();
+  clearForm();
+  renderAll();
+  showTab('list');
+}
+
+function clearForm(){
+  ['f-name','f-biz','f-offer','f-friction','f-why','f-email','f-phone','f-website','f-social'].forEach(id=>document.getElementById(id).value='');
+  ['f-rev','f-platform','f-entry','f-type'].forEach(id=>document.getElementById(id).value='');
+  scores={};
+  initScoreDims();
+  updateScoreDisplay();
+}
+
+function deleteProspect(id){
+  if(!confirm('Remove this prospect?'))return;
+  prospects=prospects.filter(p=>p.id!==id);
+  save();
+  renderAll();
+}
+
+function dimLabel(key){return DIMS.find(d=>d.key===key)?.label||key;}
+
+function renderCard(p){
+  const isTop=p.total>=20;
+  const card=document.createElement('div');
+  card.className='prospect-card'+(isTop?' top':'');
+  const topBadge=isTop?'<span class="score-badge badge-hot" style="font-size:10px;margin-left:6px">20+</span>':'';
+  const tags=[p.type,p.rev,p.platform,p.entry].filter(Boolean);
+  const dimBreakdown=Object.entries(p.scores).map(([k,v])=>`<span class="score-dim">${dimLabel(k)}: ${v}</span>`).join('');
+  card.innerHTML=`
+    <div>
+      <div class="pname">${p.name}${topBadge}</div>
+      <div class="pbiz">${p.biz||'—'}</div>
+      ${tags.length?`<div class="ptags">${tags.map(t=>`<span class="ptag">${t}</span>`).join('')}</div>`:''}
+      ${p.friction?`<div class="friction-note">${p.friction.substring(0,150)}${p.friction.length>150?'…':''}</div>`:''}
+      ${p.why?`<div class="why-note" style="margin-top:4px;color:#888">${p.why.substring(0,120)}${p.why.length>120?'…':''}</div>`:''}
+      <div class="score-breakdown">${dimBreakdown}</div>
+      ${(p.email||p.phone||p.website||p.social)?`<div class="contact-row">
+        ${p.email?`<a href="mailto:${p.email}" class="contact-chip">${p.email}</a>`:''}
+        ${p.phone?`<span class="contact-chip">${p.phone}</span>`:''}
+        ${p.website?`<a href="${p.website}" target="_blank" class="contact-chip">website</a>`:''}
+        ${p.social?`<a href="${p.social}" target="_blank" class="contact-chip">social</a>`:''}
+      </div>`:''}
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div class="pscore">${p.total}</div>
+      <div class="pscore-label">/ 30</div>
+      <div><button class="del-btn" onclick="deleteProspect(${p.id})">remove</button></div>
+    </div>`;
+  return card;
+}
+
+function renderAll(){
+  const list=document.getElementById('prospect-list');
+  const top=document.getElementById('top10-list');
+  list.innerHTML='';top.innerHTML='';
+
+  if(!prospects.length){
+    list.innerHTML='<div class="empty">No prospects yet. Use the "Add prospect" tab to get started.</div>';
+    top.innerHTML='<div class="empty">Your top 10 will appear here once you add prospects scored 20 or above.</div>';
+  } else {
+    prospects.forEach(p=>list.appendChild(renderCard(p)));
+    const topProspects=prospects.filter(p=>p.total>=20).slice(0,10);
+    if(topProspects.length){
+      topProspects.forEach(p=>top.appendChild(renderCard(p)));
+    } else {
+      top.innerHTML='<div class="empty">No prospects have scored 20+ yet. Keep adding and scoring.</div>';
+    }
+  }
+
+  const topCount=prospects.filter(p=>p.total>=20).length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-val">${prospects.length}</div><div class="stat-lbl">Total prospects</div></div>
+    <div class="stat"><div class="stat-val">${topCount}</div><div class="stat-lbl">Top priority (20+)</div></div>
+    <div class="stat"><div class="stat-val">${prospects.filter(p=>p.total>=14&&p.total<20).length}</div><div class="stat-lbl">Warm (14–19)</div></div>
+    <div class="stat"><div class="stat-val">${30-prospects.length<0?0:30-prospects.length}</div><div class="stat-lbl">Spots remaining</div></div>`;
+}
+
+function showTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const ids=['list','top10','add'];
+    t.classList.toggle('active',ids[i]===id);
+  });
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+initScoreDims();
+updateScoreDisplay();
+renderAll();
+</script>
+</body>
+</html>
